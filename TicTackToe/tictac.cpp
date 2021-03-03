@@ -118,6 +118,24 @@ public:
 
 };
 
+class CheckPlayer : public Player
+{
+public:
+	CheckPlayer(string name, Piece* piece) :Player(name, piece) {}
+	int TryMove(Board* board) override
+	{
+		for (int i = 0; i < 9; i++)
+		{
+			if (board->GetPos(i) == ' ')
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+};
+
 class ComputerPlayer : public Player
 {
 public:
@@ -188,7 +206,7 @@ public:
 
 	pair<Player*, int> GetMove()
 	{
-		return { _player, _position + 1};
+		return { _player, _position};
 	}
 };
 
@@ -198,6 +216,7 @@ private:
 	vector<Move*> _moves;
 	vector<Player*> _players;
 	Board* _board;
+	string ResultGame;
 
 	bool HasWinner()
 	{
@@ -241,7 +260,6 @@ private:
 		{
 			_board->SetPos(i, ' ');
 		}
-		_moves.clear();
 	}
 public:
 	Game(vector<Player*> players)
@@ -253,6 +271,7 @@ public:
 	void PlayTicTacToe()
 	{
 		Initialise();
+		_moves.clear();
 		ShowInstructions();
 		int currentPlayer = 0;
 		while (!HasWinner() && !IsBoardFill())
@@ -281,9 +300,66 @@ public:
 			cout << "Game over. Draw! " << endl;
 	}
 
+	void CheckGame()
+	{
+		Initialise();
+		int pos = -1;
+		int currentPlayer = 0;
+		int currentMove = -1;
+		while (!HasWinner() && !IsBoardFill() && currentMove < (int)_moves.size() - 1)
+		{
+			currentMove++;
+			auto move = _moves[currentMove]->GetMove();
+			if (_players[currentPlayer] != move.first)
+			{
+				ResultGame = "Game is not valid. Wrong move";
+				return;
+			}
+			if (move.second < 0 || move.second > 8)
+			{
+				ResultGame = "Game is not valid. Move outside of board";
+				return;
+			}
+			if (!_players[currentPlayer]->GetPiece()->CanMove(_board, move.second))
+			{
+				ResultGame = "Game is not valid. Cell is occupied";
+				return;
+			}
+			_board->SetPos(move.second, _players[currentPlayer]->GetPiece()->GetChar());
+			currentPlayer = currentPlayer == 0 ? 1 : 0;
+		}
+		currentPlayer = currentPlayer == 0 ? 1 : 0;
+		if (currentMove < (int)_moves.size() - 1)
+		{
+			ResultGame = "Game is not valid. Move after finished game";
+			return; 
+		}
+		if (!HasWinner() && _players[currentPlayer]->TryMove(_board) != -1)
+		{
+			ResultGame = "Game is valid. Game is not finished";
+			return;
+		}
+		if (HasWinner())
+		{
+			ResultGame = "Game is valid. Player " + _players[currentPlayer]->GetName() + " win";
+		}
+		else
+			ResultGame = "Game is valid. Draw";
+	}
+
 	vector<Move*> GetMoves()
 	{
 		return _moves;
+	}
+
+	void SetMoves(vector<Move*> moves)
+	{
+		_moves = moves;
+	}
+
+	string GetResult()
+	{
+		return ResultGame;
 	}
 
 };
@@ -291,21 +367,24 @@ public:
 int main()
 {
 	vector<Player*> players(2);
-	players[0] = new ComputerPlayer("Computer 1", new X());
-	players[1] = new ComputerPlayer("Computer 2", new O());
-	/*string name;
-	cout << "Enter name of Player: ";
-	cin >> name;
-	players[1] = new HumanPlayer(name, new X());*/
-
-	Game* game = new Game(players);
-	game->PlayTicTacToe();
-	for (auto move : game->GetMoves())
+	players[0] = new CheckPlayer("x", new X());
+	players[1] = new CheckPlayer("o", new O());
+	vector<Move*> moves;
+	int pos;
+	string piece;
+	while (cin >> pos)
 	{
-		cout << move->GetMove().first->GetName() <<
-			" " << move->GetMove().second <<
-			" " << move->GetMove().first->GetPiece()->GetChar()
-			<< endl;
+		cin >> piece;
+		Player* player = players[1];
+		if (piece == players[0]->GetName())
+			player = players[0];
+
+		Move* move = new Move(player, pos-1);
+		moves.push_back(move);
 	}
+	Game* game = new Game(players);
+	game->SetMoves(moves);
+	game->CheckGame();
+	cout << game->GetResult() << endl;
 	return (0);
 }

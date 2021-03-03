@@ -31,8 +31,8 @@ public:
     }
     bool HasNextLine() override
     {
-        _streamreader->getline(_line, 100000, '\n');
-        return (!_streamreader->eof());
+        _streamreader->getline(_line, 100000);
+        return (!_streamreader->eof() || strlen(_line) > 0);
     }
 
     vector<T> NextLine() override
@@ -84,25 +84,72 @@ public:
         {
             if (curwidth + w.size() <= _width)
             {
-                curwidth += w.size();
+                curwidth += w.size() +  1;
                 _result += w + " ";
             }
             else
             {
                 curwidth = 0;
                 _result.erase(_result.size() - 1, 1);
-                _result += "\r\n";
+                _result += "\n";
+                curwidth += w.size() + 1;
+                _result += w + " ";
             }
         }
+        if (_result != "")
+            _result.erase(_result.size() - 1, 1);
     }
 };
+
 
 class RightJustifyFormatter : public ParagraphFormatter
 {
 public:
     void Format() override
     {
+        _result = "";
+        int curwidth = 0;
+        vector<string> res;
+        for (auto w : _words)
+        {
+            if (curwidth + w.size() <= _width)
+            {
+                curwidth += w.size() + 1;
+                _result += w + " ";
+            }
+            else
+            {
+                _result.erase(_result.size() - 1, 1);
 
+                while (curwidth <= _width)
+                {
+                    _result = " " + _result;
+                    curwidth++;
+                }
+                curwidth = 0;
+                _result += "\n";
+                res.push_back(_result);
+                _result = "";
+                curwidth += w.size() + 1;
+                _result += w + " ";
+            }
+        }
+
+        if (_result != "")
+        {
+            _result.erase(_result.size() - 1, 1);
+            while (curwidth <= _width)
+            {
+                _result = " " + _result;
+                curwidth++;
+            }
+            res.push_back(_result);
+        }
+        _result = "";
+        for (auto l : res)
+        {
+            _result += l;
+        }
     }
 };
 
@@ -114,6 +161,78 @@ public:
 
     }
 };
+
+class WidthJustifyFormatter : public ParagraphFormatter
+{
+public:
+    void Format() override
+    {
+        _result = "";
+        int curwidth = 0;
+        vector<string> res;
+        for (auto w : _words)
+        {
+            if (curwidth + w.size() <= _width)
+            {
+                curwidth += w.size() + 1;
+                _result += w + " ";
+            }
+            else
+            {
+                int p = 0;
+                _result.erase(_result.size() - 1, 1);
+                while (curwidth <= _width)
+                {
+                    p = _result.find(' ', p);
+                    if (p == -1)
+                    {
+                        p = 0;
+                        continue;
+                    }
+                    _result.insert(p, 1, ' ');
+                    while (_result[p] == ' ')
+                    {
+                        p++;
+                    }
+                    curwidth++;
+                }
+                curwidth = 0;
+                _result += "\n";
+                res.push_back(_result);
+                _result = "";
+                curwidth += w.size() + 1;
+                _result += w + " ";
+            }
+        }
+        if (_result != "")
+        {
+            int p = 0;
+            _result.erase(_result.size() - 1, 1);
+            while (curwidth <= _width)
+            {
+                p = _result.find(' ', p);
+                if (p == -1)
+                {
+                    p = 0;
+                    continue;
+                }
+                _result.insert(p, 1, ' ');
+                while (_result[p] == ' ')
+                {
+                    p++;
+                }
+                curwidth++;
+            }
+            res.push_back(_result);
+        }
+        _result = "";
+        for (auto l : res)
+        {
+            _result += l;
+        }
+    }
+};
+
 
 class TextFromatter
 {
@@ -133,24 +252,36 @@ public:
 
     void Format()
     {
-        vector<string> lines;
+        vector<string> words;
         TextFileParse<string>* parser = new TextFileParse<string>(_in);
         while (parser->HasNextLine())
         {
-            _pf->AddLine(parser->NextLine(), _width);
-            lines.push_back(_pf->GetFormattedLine() + "\r\n");
+            for (auto i : parser->NextLine())
+            {
+                words.push_back(i);
+            }
         }
-        for (auto l : lines)
-        {
-            _out->write(l.c_str(), l.size());
-        }
+        _pf->AddLine(words, _width);
+        _out->write(_pf->GetFormattedLine().c_str(), _pf->GetFormattedLine().size());
     }
 };
 
 int main()
 {
-    TextFromatter* tf = new TextFromatter(new LeftJustifyFormatter(), (&cin), (&cout), 80);
+    int n;
+    char J;
+    cin >> n >> J;
+    ParagraphFormatter* pf = NULL;
+    switch (J)
+    {
+    case 'L': pf = new LeftJustifyFormatter(); break;
+    case 'R': pf = new RightJustifyFormatter(); break;
+    case 'E': pf = new WidthJustifyFormatter(); break;
+    }
+    TextFromatter* tf = new TextFromatter(pf, (&cin), (&cout), n);
     tf->Format();
     return 0;
 }
 
+/*
+*/
