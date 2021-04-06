@@ -32,7 +32,7 @@ public:
     bool HasNextLine() override
     {
         _streamreader->getline(_line, 100000);
-        return (!_streamreader->eof() || strlen(_line) > 0);
+        return (!_streamreader->eof() || (strlen(_line) > 0));
     }
 
     vector<T> NextLine() override
@@ -183,9 +183,12 @@ public:
                 _result.erase(_result.size() - 1, 1);
                 while (curwidth <= _width)
                 {
+                    int prev = p;
                     p = _result.find(' ', p);
                     if (p == -1)
                     {
+                        if (prev == 0)
+                            break;
                         p = 0;
                         continue;
                     }
@@ -210,9 +213,12 @@ public:
             _result.erase(_result.size() - 1, 1);
             while (curwidth <= _width)
             {
+                int prev = p;
                 p = _result.find(' ', p);
                 if (p == -1)
                 {
+                    if (prev == 0)
+                        break;
                     p = 0;
                     continue;
                 }

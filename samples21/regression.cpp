@@ -30,13 +30,11 @@ class QPointF
 private:
 	double _x, _y;
 public:
-
 	QPointF(double x, double y)
 	{
 		_x = x;
 		_y = y;
 	}
-
 	double x()
 	{
 		return _x;
@@ -206,6 +204,8 @@ int main()
 	vector<QPointF*> points { new QPointF(1,5.3), new QPointF(2,6.3), 
 		                        new QPointF(3,4.8), new QPointF(4,3.8), new QPointF(5,3.3) };
 	LinearRegression* lr = new LinearRegression(points);
-	cout << lr->a() << " " << lr->b();
+	ExponentialRegression* er = new ExponentialRegression(points);
+	cout << lr->a() << " " << lr->b() << endl;
+	cout << er->a() << " " << er->b() << endl;
 	return 0;
 }
