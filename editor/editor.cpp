@@ -3,16 +3,25 @@
 #include<cmath>
 #include<map>
 #include<set>
+#include<algorithm>
 
 using namespace std;
 
 //Итератор - проход по тексту (TextBuf)
 //Фабричный метод - для генерации комманд
 
+class Position
+{
+public:
+	int l, r;
+	char c;
+};
+
+
 class TextBuf
 {
 private:
-	map<pair<int, int>, char> _text;
+	vector<Position> _text;
 	int _pos; //текущая позиция
 public:
 	TextBuf()
@@ -21,31 +30,52 @@ public:
 	}
 	char GetText(int x)
 	{
-		for (auto it = _text.begin(); it != _text.end(); it++)
+		for (int i = 0; i < _text.size(); i++)
 		{
-			if (x >= it->first.first && x <= it->first.second)
-				return it->second;
+			if (x >= _text[i].l && x <= _text[i].r)
+				return _text[i].c;
 		}
 		return 0;
 	}
 	void SetText(int x, int count, char text)
 	{
-		pair<int, int> cur = { 0,0 };
-		char cur_c = 0;
-		for (auto it = _text.begin(); it != _text.end(); it++)
+		Position ps;
+		int i = 0;
+		int sz = _text.size();
+		for(i = 0; i < sz; i++)
 		{
-			if (x >= it->first.first && x <= it->first.second)
+			if (x >= _text[i].l && x <= _text[i].r) // внутри отрезка
 			{
-				cur = it->first;
-				cur_c = it->second;
+				int r = _text[i].r;
+				_text[i].r = x - 1;
+				Position p1;
+				p1.l = x;
+				p1.r = x + count;
+				p1.c = text;
+				_text.push_back(p1);
+				Position p2;
+				p2.l = x + count + 1;
+				p2.r = r + count;
+				p2.c = _text[i].c;
+				_text.push_back(p2);
+				break;
+			}
+			if ((x > _text[i].r && i < sz - 1 && x < _text[i + 1].l) || i == sz - 1)
+			{
+				Position p;
+				p.l = x;
+				p.l = x + count;
+				p.c = text;
+				_text.push_back(p);
 				break;
 			}
 		}
-		_text.erase(cur);
-		_text[{cur.first, x - 1 }] = cur_c;
-		_text[{x, x + count }] = text;
-		_text[{x + count + 1, x + count + cur.first - cur.second + 1}] = cur_c;
-		//Сдвинуть все отрезки вправо на count позиций.
+		for (int j = i + 1; j < sz; j++)
+		{
+			_text[j].l += count;
+			_text[j].r += count;
+		}
+		sort(_text.begin(), _text.end(), [](Position& a, Position& b) { return a.l < b.l; });
 	}
 	int GetPos()
 	{
