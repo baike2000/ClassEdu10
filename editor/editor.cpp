@@ -12,21 +12,40 @@ using namespace std;
 class TextBuf
 {
 private:
-	string _text; // Надо использовать map для хранения информации о том, что храниться по данной позиции кусора
+	map<pair<int, int>, char> _text;
 	int _pos; //текущая позиция
 public:
 	TextBuf()
 	{
-		_text = "";
 		_pos = 0;
 	}
-	string GetText()
+	char GetText(int x)
 	{
-		return _text;
+		for (auto it = _text.begin(); it != _text.end(); it++)
+		{
+			if (x >= it->first.first && x <= it->first.second)
+				return it->second;
+		}
+		return 0;
 	}
-	void SetText(string text)
+	void SetText(int x, int count, char text)
 	{
-		_text = text;
+		pair<int, int> cur = { 0,0 };
+		char cur_c = 0;
+		for (auto it = _text.begin(); it != _text.end(); it++)
+		{
+			if (x >= it->first.first && x <= it->first.second)
+			{
+				cur = it->first;
+				cur_c = it->second;
+				break;
+			}
+		}
+		_text.erase(cur);
+		_text[{cur.first, x - 1 }] = cur_c;
+		_text[{x, x + count }] = text;
+		_text[{x + count + 1, x + count + cur.first - cur.second + 1}] = cur_c;
+		//Сдвинуть все отрезки вправо на count позиций.
 	}
 	int GetPos()
 	{
@@ -34,15 +53,7 @@ public:
 	}
 	void SetPos(int pos)
 	{
-		if (pos >= _text.size())
-			_text += " ";
-		if (pos < 0)
-			return;
 		_pos = pos;
-	}
-	char GetChar(int index)
-	{
-		return _text[index];
 	}
 };
 
@@ -69,8 +80,7 @@ public:
 	}
 	void exec() override
 	{
-		for (int i = 0; i < _pos; i++)
-			_buffer->SetPos(_buffer->GetPos()-1);
+		_buffer->SetPos(_buffer->GetPos() - _pos);
 	}
 };
 
@@ -85,8 +95,7 @@ public:
 	}
 	void exec() override
 	{
-		for (int i = 0; i < _pos; i++)
-			_buffer->SetPos(_buffer->GetPos() + 1);
+		_buffer->SetPos(_buffer->GetPos() + _pos);
 	}
 };
 
@@ -103,55 +112,61 @@ public:
 	}
 	void exec() override
 	{
-		auto s_old = _buffer->GetText();
-		auto it = s_old.begin();
-		for (int i = 0; i < _pos; i++)
-		{
-			s_old.insert(it, _alph);
-		}
-		for (int i = 0; i < _pos - 1; i++)
-		{
-			_buffer->SetPos(_buffer->GetPos() + 1);
-		}
+		_buffer->SetText(_buffer->GetPos(), _pos, _alph);
+		_buffer->SetPos(_buffer->GetPos() + _pos);
 	}
 };
 
 class Editor
 {
-public:
+private:
+	vector<ICommand*> _cmds;
 	TextBuf* _buffer;
-	Editor(TextBuf* buffer)
+public:
+	Editor()
 	{
-		_buffer = buffer;
+		_buffer = new TextBuf();
 	}
-	void ExecCommand(ICommand* cmd)
+	void AddCommand(int cnt, char cmd, char alph)
 	{
-		cmd->exec();
+		ICommand* ccmd;
+		if (cmd == 'I')
+			ccmd = new InsCommand(_buffer, cnt, alph);
+		if (cmd == 'H')
+			ccmd = new HCommand(_buffer, cnt);
+	    if (cmd == 'L')
+			ccmd = new LCommand(_buffer, cnt);
+		_cmds.push_back(ccmd);
+	}
+	void Exec()
+	{
+		for(auto cmd:_cmds)
+			cmd->exec();
 	}
 	void PrintChar(int index)
 	{
-		cout << _buffer->GetChar(index) << endl;
+		cout << _buffer->GetText(index) << endl;
 	}
 };
 
 
 int main()
 {
-	Editor* editor = new Editor(new TextBuf());
+	Editor* editor = new Editor();
 	int n, m;
 	cin >> n >> m;
 	for (int i = 0; i < n; i++)
 	{
 		int c;
-		char ch;
+		char ch, b = 0;
 		cin >> c >> ch;
 		if (ch == 'I')
 		{
-			char b;
 			cin >> b;
-			editor->ExecCommand(new InsCommand(editor->_buffer, c, b)); // команды определить в редакторе как шаблонный метод
 		}
+		editor->AddCommand(c, ch, b);
 	}
+	editor->Exec();
 	for (int i = 0; i < m; i++)
 	{
 		int k;
