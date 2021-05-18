@@ -13,7 +13,7 @@ namespace smaples29
 
 	class Engine
 	{
-		public int horsepower { get; set; }
+		public int Horsepower { get; set; }
 	}
 
 	class Body
@@ -33,7 +33,7 @@ namespace smaples29
 
 	class Car
 	{
-	public string Brand { get; set; }
+		public string Brand { get; set; }
 		public List<Wheel> wheels { get; set; }
 		public Engine engine { get; set; }
 		public Body body { get; set; }
@@ -43,7 +43,7 @@ namespace smaples29
 			{
 				Console.WriteLine($"brand: {Brand}"); ;
 				Console.WriteLine($"body: {body.toString()}");
-				Console.WriteLine($"engine horsepower:{engine.horsepower}");
+				Console.WriteLine($"engine horsepower:{engine.Horsepower}");
 				Console.WriteLine($"tire size:{wheels[0].Size}'");
 			}
 		}
@@ -51,7 +51,7 @@ namespace smaples29
 
 	interface IBuilder
 	{
-		string getBrand();
+		string getBrand { get; }
 		Wheel getWheel();
 		Engine getEngine();
 		Body getBody();
@@ -60,116 +60,57 @@ namespace smaples29
 
 	class JeepBuilder : IBuilder
 	{
-		public string getBrand()
-		{
-			return "Jeep";
-		}
-		public Wheel getWheel()
-		{
-			Wheel wheel = new Wheel();
-			wheel.Size = 22;
-			return wheel;
-		}
-		public Engine getEngine()
-		{
-			Engine engine = new Engine();
-			engine.horsepower = 400;
-			return engine;
-		}
-		public Body getBody()
-		{
-			Body body = new Body();
-			body.shape = CarEnum.SUV;
-			return body;
-		}
+		public string getBrand => "Jeep";
+		public Wheel getWheel() => new() { Size = 22 };
+		public Engine getEngine() => new() { Horsepower = 400 };
+		public Body getBody() => new() { shape = CarEnum.SUV };
 	}
 
 	class NissanBuilder : IBuilder
 	{
-		public string getBrand()
-		{
-			return "Nissan";
-		}
-		public Wheel getWheel()
-		{
-			Wheel wheel = new Wheel();
-			wheel.Size = 16;
-			return wheel;
-		}
-		public Engine getEngine()
-		{
-			Engine engine = new Engine();
-			engine.horsepower = 85;
-			return engine;
-		}
-		public Body getBody()
-		{
-			Body body = new Body();
-			body.shape = CarEnum.HATCHBACK;
-			return body;
-		}
+		public string getBrand => "Nissan";
+		public Wheel getWheel() => new() { Size = 16 };
+		public Engine getEngine() => new() { Horsepower = 85 };
+		public Body getBody() => new() { shape = CarEnum.HATCHBACK };
 	}
 
-/*class BMWBuilder : public Builder
-{
-public:
-	string getBrand()
-{
-	return "BMW";
-}
-
-Wheel* getWheel()
-{
-	Wheel* wheel = new Wheel();
-	wheel->size = 21;
-	return wheel;
-}
-Engine* getEngine()
-{
-	Engine* engine = new Engine();
-	engine->horsepower = 500;
-	return engine;
-}
-Body* getBody()
-{
-	Body* body = new Body();
-	body->shape = Body::SEDAN;
-	return body;
-}
-};*/
-
-class Director
-{
-	private IBuilder builder;
-	public	void setBuilder(IBuilder newBuilder)
+	class BMWBuilder : IBuilder
 	{
-		builder = newBuilder;
+		public string getBrand => "BMW";
+		public Wheel getWheel() => new() { Size = 21 };
+		public Engine getEngine() => new() { Horsepower = 500 };
+        public Body getBody() => new() { shape = CarEnum.SEDAN };
 	}
-	public Car getCar()
+
+	class Director
 	{
-		Car car = new Car();
-		car.Brand = builder.getBrand();
-		car.body = builder.getBody();
-		car.engine = builder.getEngine();
-		car.wheels = new List<Wheel>();
-		car.wheels.Add(builder.getWheel());
-		car.wheels.Add(builder.getWheel());
-		car.wheels.Add(builder.getWheel());
-		car.wheels.Add(builder.getWheel());
-		return car;
+		private IBuilder builder;
+        public void setBuilder(IBuilder newBuilder) => builder = newBuilder;
+        public Car getCar() =>
+			new()
+            {
+				Brand = builder.getBrand,
+				body = builder.getBody(),
+				engine = builder.getEngine(),
+                wheels = new List<Wheel>()
+				{
+					builder.getWheel(),
+					builder.getWheel(),
+					builder.getWheel(),
+					builder.getWheel()
+				}
+			};
 	}
-};
 class Program
     {
         static void Main(string[] args)
         {
-			List<IBuilder> builders = new List<IBuilder> 
-				{ new JeepBuilder(), new NissanBuilder() };
+			List<IBuilder> builders = new() { new JeepBuilder(), new NissanBuilder(), new BMWBuilder() };
 
-			List<Car> cars = new List<Car>();
-			Director director = new Director();
-			JeepBuilder jeepBuilder = new JeepBuilder();
-			NissanBuilder nissanBuilder = new NissanBuilder();
+			var cars = new List<Car>();
+			var director = new Director();
+			var jeepBuilder = new JeepBuilder();
+			var nissanBuilder = new NissanBuilder();
 //			BMWBuilder bmwBuilder;
 
 			for (int i = 0; i < 18; i++)
