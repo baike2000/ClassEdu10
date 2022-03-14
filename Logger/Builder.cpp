@@ -147,15 +147,15 @@ public:
 		return car;
 	}
 };
-/*
+
 int main() {
 	vector<Builder*> builders = { new  JeepBuilder(), new NissanBuilder(), new BMWBuilder() };
 
 	vector<Car*> cars;
 	Director director;
-	JeepBuilder jeepBuilder;
-	NissanBuilder nissanBuilder;
-	BMWBuilder bmwBuilder;
+//	JeepBuilder jeepBuilder;
+//	NissanBuilder nissanBuilder;
+//	BMWBuilder bmwBuilder;
 
 	for (int i = 0; i < 18; i++)
 	{
@@ -171,5 +171,5 @@ int main() {
 
 	return 0;
 }
-*/ 
+ 
 

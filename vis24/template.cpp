@@ -14,6 +14,7 @@ public:
 	virtual int maxLimit() = 0;
 	// Template Method
 	void withdraw(int amount) {
+		cout << amount << endl;
 		start();
 		if (amount < maxLimit())
 			allow();

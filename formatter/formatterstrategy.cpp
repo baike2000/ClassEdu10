@@ -84,7 +84,7 @@ public:
         {
             if (curwidth + w.size() <= _width)
             {
-                curwidth += w.size() +  1;
+                curwidth += w.size() + 1;
                 _result += w + " ";
             }
             else
@@ -241,26 +241,16 @@ public:
 class TextFromatter
 {
 private:
-    ParagraphFormatter* _pf = NULL;
+    ParagraphFormatter* _pf;
     istream* _in;
     ostream* _out;
-    int _width = 0;
+    int _width;
 public:
-    TextFromatter(istream* ins, ostream* outs)
+    TextFromatter(ParagraphFormatter* pf, istream* ins, ostream* outs, int width)
     {
+        _pf = pf;
         _in = ins;
         _out = outs;
-    }
-
-    void SetStrategy(char strategy, int width)
-    {
-        ParagraphFormatter* pf = NULL;
-        switch (strategy)
-        {
-        case 'L': pf = new LeftJustifyFormatter(); break;
-        case 'R': pf = new RightJustifyFormatter(); break;
-        case 'E': pf = new WidthJustifyFormatter(); break;
-        }
         _width = width;
     }
 
@@ -285,8 +275,14 @@ int main()
     int n;
     char J;
     cin >> n >> J;
-    TextFromatter* tf = new TextFromatter((&cin), (&cout));
-    tf->SetStrategy(J, n);
+    ParagraphFormatter* pf = NULL;
+    switch (J)
+    {
+    case 'L': pf = new LeftJustifyFormatter(); break;
+    case 'R': pf = new RightJustifyFormatter(); break;
+    case 'E': pf = new WidthJustifyFormatter(); break;
+    }
+    TextFromatter* tf = new TextFromatter(pf, (&cin), (&cout), n);
     tf->Format();
     return 0;
 }
