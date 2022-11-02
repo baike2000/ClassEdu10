@@ -312,17 +312,17 @@ public:
 			auto move = _moves[currentMove]->GetMove();
 			if (_players[currentPlayer] != move.first)
 			{
-				ResultGame = "Game is not valid. Wrong move";
+				ResultGame = "Game is not valid.  Wrong move";
 				return;
 			}
 			if (move.second < 0 || move.second > 8)
 			{
-				ResultGame = "Game is not valid. Move outside of board";
+				ResultGame = "Game is not valid.  Move outside of board";
 				return;
 			}
 			if (!_players[currentPlayer]->GetPiece()->CanMove(_board, move.second))
 			{
-				ResultGame = "Game is not valid. Cell is occupied";
+				ResultGame = "Game is not valid.  Cell is occupied";
 				return;
 			}
 			_board->SetPos(move.second, _players[currentPlayer]->GetPiece()->GetChar());
@@ -331,20 +331,20 @@ public:
 		currentPlayer = currentPlayer == 0 ? 1 : 0;
 		if (currentMove < (int)_moves.size() - 1)
 		{
-			ResultGame = "Game is not valid. Move after finished game";
+			ResultGame = "Game is not valid.  Move after finished game";
 			return; 
 		}
 		if (!HasWinner() && _players[currentPlayer]->TryMove(_board) != -1)
 		{
-			ResultGame = "Game is valid. Game is not finished";
+			ResultGame = "Game is valid.  Game is not finished";
 			return;
 		}
 		if (HasWinner())
 		{
-			ResultGame = "Game is valid. Player " + _players[currentPlayer]->GetName() + " win";
+			ResultGame = "Game is valid.  Player " + _players[currentPlayer]->GetName() + " win";
 		}
 		else
-			ResultGame = "Game is valid. Draw";
+			ResultGame = "Game is valid.  Draw";
 	}
 
 	vector<Move*> GetMoves()
