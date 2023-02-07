@@ -38,11 +38,11 @@ public:
 	}
 	void SetPos(int position, char value)
 	{
-		board[position / 3][position % 3] = value;
+		board[position / SIDE][position % SIDE] = value;
 	}
 	char GetPos(int position)
 	{
-		return board[position / 3][position % 3];
+		return board[position / SIDE][position % SIDE];
 	}
 	bool rowCrossed()
 	{
@@ -78,7 +78,102 @@ public:
 
 		return (false);
 	}
+	int GetPlacesCount()
+	{
+		return SIDE * SIDE;
+	}
 };
+
+
+
+class Rule
+{
+public:
+	Rule() {}
+	virtual bool Check(Board* board) = 0;
+	virtual bool IsWin() = 0;
+};
+
+class RowWin :public Rule
+{
+public:
+	bool Check(Board* board) override
+	{
+		bool flag = true;
+		for (int i = 0; i < board->GetPlacesCount() / SIDE; i++) {
+			for (int j = 1; j < board->GetPlacesCount() / SIDE; j++) {
+				if (board->GetPos(i * j) == board->GetPos(i * (j - 1))
+					&& board->GetPos(i * j) != ' ')
+					flag = flag && true;
+				else
+					flag = flag && false;
+			}
+		}
+		return flag;
+	}
+	bool IsWin() { return true; }
+};
+
+class ColumnWin :public Rule
+{
+public:
+	bool Check(Board* board) override
+	{
+		bool flag = true;
+		for (int i = 0; i < board->GetPlacesCount() / SIDE; i++) {
+			for (int j = 1; j < board->GetPlacesCount() / SIDE; j++) {
+				if (board->GetPos(i * j) == board->GetPos(i * (j - 1))
+					&& board->GetPos(i * j) != ' ')
+					flag = flag && true;
+				else
+					flag = flag && false;
+			}
+		}
+		return flag;
+	}
+	bool IsWin() { return true; }
+};
+
+class DiagonalWin :public Rule
+{
+public:
+	bool Check(Board* board) override
+	{
+		bool flag = true;
+		for (int i = 0; i < (board->GetPlacesCount() / SIDE) - 1; i++) {
+			if (board->GetPos(i * i) == board->GetPos((i + 1) * (i + 1))
+				&& board->GetPos(i * i) != ' ')
+				flag = flag && true;
+			else
+				flag = flag && false;
+		}
+		for (int i = 0; i < (board->GetPlacesCount() / SIDE) - 1; i++) {
+			if (board->GetPos(((SIDE - i + 1) * i)) == board->GetPos(((SIDE - i + 1) + 1) * (i + 1))
+				&& board->GetPos((SIDE - i + 1) * i) != ' ')
+				flag = flag && true;
+			else
+				flag = flag && false;
+		}
+		return flag;
+	}
+	bool IsWin() { return true; }
+};
+
+class IsFull : public Rule
+{
+	bool Check(Board* board) override
+	{
+		bool isnotfill = false;
+		for (int i = 0; i < board->GetPlacesCount(); i++)
+		{
+			isnotfill = isnotfill || (board->GetPos(i) == ' ');
+		}
+		return !isnotfill;
+	}
+
+	bool IsWin() { return false; }
+};
+
 
 class Player
 {
@@ -124,7 +219,7 @@ public:
 	CheckPlayer(string name, Piece* piece) :Player(name, piece) {}
 	int TryMove(Board* board) override
 	{
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < SIDE*SIDE; i++)
 		{
 			if (board->GetPos(i) == ' ')
 			{
@@ -143,7 +238,7 @@ public:
 
 	int TryMove(Board* board) override
 	{
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < board->GetPlacesCount(); i++)
 		{
 			if (board->GetPos(i) == ' ')
 			{
@@ -156,8 +251,26 @@ public:
 
 };
 
+class BestComputerPlayer : public Player
+{
+public:
+	BestComputerPlayer(string name, Piece* piece) :Player(name, piece) {}
 
+	int TryMove(Board* board) override
+	{
+		bool flag = false;
+		int pos = -1;
+		do
+		{
+			pos = rand() % (board->GetPlacesCount());
+			if (board->GetPos(pos) == ' ')
+				flag = true;
+		} while (!flag);
+		cout << pos + 1 << endl;
+		return pos;
+	}
 
+};
 
 class Piece
 {
@@ -217,9 +330,18 @@ private:
 	vector<Player*> _players;
 	Board* _board;
 	string ResultGame;
+	vector<Rule*> _rules;
 
 	bool HasWinner()
 	{
+		/*for (auto r : _rules)
+		{
+			if (r->IsWin() && r->Check(_board))
+			{
+				return true;
+			}
+		}
+		return false;*/
 		return (_board->rowCrossed()
 			|| _board->columnCrossed()
 			|| _board->diagonalCrossed());
@@ -227,8 +349,14 @@ private:
 	
 	bool IsBoardFill()
 	{
+		/*for (auto r : _rules)
+		{
+			if (!r->IsWin() && r->Check(_board))
+				return true;
+		}
+		return false;*/
 		bool isnotfill = false;
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < _board->GetPlacesCount(); i++)
 		{
 			isnotfill = isnotfill || (_board->GetPos(i) == ' ');
 		}
@@ -256,7 +384,7 @@ private:
 	void Initialise()
 	{
 		_board = new Board();
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < _board->GetPlacesCount(); i++)
 		{
 			_board->SetPos(i, ' ');
 		}
@@ -265,6 +393,10 @@ public:
 	Game(vector<Player*> players)
 	{
 		_players = players;
+		_rules.push_back(new RowWin());
+		_rules.push_back(new ColumnWin());
+		_rules.push_back(new DiagonalWin());
+		_rules.push_back(new IsFull());
 	}
 
 
@@ -366,10 +498,11 @@ public:
 
 int main()
 {
+	srand(time(NULL));
 	vector<Player*> players(2);
-	players[0] = new CheckPlayer("x", new X());
-	players[1] = new CheckPlayer("o", new O());
-	vector<Move*> moves;
+	players[0] = new HumanPlayer("x", new X());
+	players[1] = new BestComputerPlayer("o", new O());
+	/*vector<Move*> moves;
 	int pos;
 	string piece;
 	while (cin >> pos)
@@ -382,9 +515,11 @@ int main()
 		Move* move = new Move(player, pos-1);
 		moves.push_back(move);
 	}
+	*/
 	Game* game = new Game(players);
-	game->SetMoves(moves);
-	game->CheckGame();
+	game->PlayTicTacToe();
+	//game->SetMoves(moves);
+	//game->CheckGame();
 	cout << game->GetResult() << endl;
 	return (0);
 }

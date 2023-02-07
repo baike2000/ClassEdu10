@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{be51e142-9bbd-4d16-8936-2bc8243185a1}</ProjectGuid>
-    <RootNamespace>My26tasks</RootNamespace>
+    <ProjectGuid>{072cdae6-6701-4400-ae8b-c0bd2d251f1a}</ProjectGuid>
+    <RootNamespace>My07lesson</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,8 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="A.cpp" />
-    <ClCompile Include="B.cpp" />
+    <ClCompile Include="dfs.cpp" />
+    <ClCompile Include="graph.cpp" />
+    <ClCompile Include="path.cpp" />
+    <ClCompile Include="tree.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
