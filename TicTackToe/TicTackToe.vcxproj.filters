@@ -18,5 +18,8 @@
     <ClCompile Include="tictac.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tictaccup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
